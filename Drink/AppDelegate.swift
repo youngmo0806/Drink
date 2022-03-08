@@ -6,14 +6,29 @@
 //
 
 import UIKit
+import NotificationCenter
+import UserNotifications
 
 @main
 class AppDelegate: UIResponder, UIApplicationDelegate {
 
-
+    let userNotificationCenter = UNUserNotificationCenter.current()
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
         // Override point for customization after application launch.
+        
+        
+        UNUserNotificationCenter.current().delegate = self
+        
+        //사용자의 승인을 구하는 코드. 알림을 받으려면 승인을 받아야 한다.
+        let auth = UNAuthorizationOptions(arrayLiteral: [.alert,.badge,.sound])
+        userNotificationCenter.requestAuthorization(options: auth) { _, error in
+            if let error = error {
+                print("ERROR: AUTH Error \(error.localizedDescription)")
+            }
+        }
+        
+        
         return true
     }
 
@@ -34,3 +49,13 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
 }
 
+extension AppDelegate: UNUserNotificationCenterDelegate {
+    
+    func userNotificationCenter(_ center: UNUserNotificationCenter, willPresent notification: UNNotification, withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void) {
+        completionHandler([.badge, .list, .banner, .sound])
+    }
+        
+    func userNotificationCenter(_ center: UNUserNotificationCenter, didReceive response: UNNotificationResponse, withCompletionHandler completionHandler: @escaping () -> Void) {
+        completionHandler()
+    }
+}

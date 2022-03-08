@@ -6,10 +6,12 @@
 //
 
 import UIKit
+import UserNotifications
 
 class AlertListViewController: UITableViewController {
     
     var alerts: [Alert] = []
+    let userNotificationCenter = UNUserNotificationCenter.current()
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -47,6 +49,12 @@ class AlertListViewController: UITableViewController {
             //저장
             UserDefaults.standard.set(try? PropertyListEncoder().encode(self.alerts), forKey: "alerts")
             
+            
+            print("1.신규 알람을 추가 합니다")
+            print("2.추가할 알람을 확인합니다. \(newAlert)")
+            //신규 등록할때 알람 추가
+            self.userNotificationCenter.addNotificationRequest(by: newAlert)
+            
             self.tableView.reloadData()
             
         }
@@ -57,7 +65,7 @@ class AlertListViewController: UITableViewController {
         
     }
     
-    //userDefaults를 이용한 structure 타입 Data
+    //데이터 로드
     func alertList() -> [Alert] {
         guard let data = UserDefaults.standard.value(forKey: "alerts") as? Data,
               let alerts = try? PropertyListDecoder().decode([Alert].self, from: data) else {return [] }
@@ -112,9 +120,15 @@ extension AlertListViewController {
         
         switch editingStyle {
         case .delete:
-            //노티피케이션 삭제 구현
+            print("alerts=> \(alerts)")
+            
+            //노티피케이션 삭제 구현, 알림 삭제 하기 전에 노티피케이션 먼저 삭제
+            userNotificationCenter.removePendingNotificationRequests(withIdentifiers: [alerts[indexPath.row].id])
+            
+            //알람이 삭제
             self.alerts.remove(at: indexPath.row)
             UserDefaults.standard.set(try? PropertyListEncoder().encode(self.alerts), forKey: "alerts")
+            
             self.tableView.reloadData()
             
             return
